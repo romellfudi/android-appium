@@ -1,12 +1,10 @@
-export const config = {
+exports.config = {
   //
   // ====================
   // Runner Configuration
   // ====================
   // WebdriverIO supports running e2e tests as well as unit and component tests.
   runner: "local",
-  port: 4723,
-  path: "/wd/hub",
 
   //
   // ==================
@@ -24,7 +22,7 @@ export const config = {
   // then the current working directory is where your `package.json` resides, so `wdio`
   // will be called from there.
   //
-  specs: ["./test/specs/disneyland.spec.js"],
+  specs: ["./test/specs/**/*.js"],
   // Patterns to exclude.
   exclude: [
     // 'path/to/excluded/files'
@@ -45,7 +43,7 @@ export const config = {
   // and 30 processes will get spawned. The property handles how many capabilities
   // from the same test should run tests.
   //
-  //maxInstances: 10,
+  maxInstances: 10,
   //
   // If you have trouble getting all important capabilities together, check out the
   // Sauce Labs platform configurator - a great tool to configure your capabilities:
@@ -53,15 +51,39 @@ export const config = {
   //
   capabilities: [
     {
-      automationName: "uiAutomator2",
-      platformName: "Android",
-      platformVersion: "13",
-      deviceName: "emulator-5554",
-      deviceOrientation: "portrait",
-      appActivity: "com.disney.wdpro.park.activities.SplashActivity",
-      appPackage: "com.disney.wdpro.dlr",
-      maxInstances: 1,
-      noReset: true,
+      // maxInstances can get overwritten per capability. So if you have an in-house Selenium
+      // grid with only 5 firefox instances available you can make sure that not more than
+      // 5 instances get started at a time.
+      maxInstances: 5,
+      //
+      browserName: "chrome",
+      browserVersion: "latest",
+      "goog:chromeOptions": {
+        w3c: true,
+        // to run chrome headless the following flags are required
+        // (see https://developers.google.com/web/updates/2017/04/headless-chrome)
+        // --disable-gpu \   # Temporarily needed if running on Windows."window-size=2560,1440" "window-size=1360,998"
+        args: [
+          "--headless",
+          "--no-sandbox",
+          "--disable-dev-shm-usage",
+          "window-size=2560,1440",
+        ],
+        prefs: {
+          "download.default_directory": "",
+          "profile.content_settings.exceptions.clipboard": {
+            "[*.],*": {
+              last_modified: "1576491240619",
+              setting: 1,
+            },
+          },
+        },
+      },
+      acceptInsecureCerts: true,
+      // If outputDir is provided WebdriverIO can capture driver session logs
+      // it is possible to configure which logTypes to include/exclude.
+      // excludeDriverLogs: ['*'], // pass '*' to exclude all driver session logs
+      // excludeDriverLogs: ['bugreport', 'server'],
     },
   ],
   //
@@ -71,7 +93,7 @@ export const config = {
   // Define all options that are relevant for the WebdriverIO instance here
   //
   // Level of logging verbosity: trace | debug | info | warn | error | silent
-  logLevel: "warn",
+  logLevel: "info",
   //
   // Set specific log levels per logger
   // loggers:
@@ -95,10 +117,10 @@ export const config = {
   // with `/`, the base url gets prepended, not including the path portion of your baseUrl.
   // If your `url` parameter starts without a scheme or `/` (like `some/path`), the base url
   // gets prepended directly.
-  baseUrl: "",
+  baseUrl: "http://localhost",
   //
   // Default timeout for all waitFor* commands.
-  waitforTimeout: 20000,
+  waitforTimeout: 10000,
   //
   // Default timeout in milliseconds for request
   // if browser driver or grid doesn't send response
@@ -111,7 +133,7 @@ export const config = {
   // Services take over a specific job you don't want to take care of. They enhance
   // your test setup with almost no effort. Unlike plugins, they don't add new
   // commands. Instead, they hook themselves up into the test process.
-  services: [],
+  services: ["chromedriver","intercept"],
 
   // Framework you want to run your specs with.
   // The following are supported: Mocha, Jasmine, and Cucumber
@@ -133,13 +155,14 @@ export const config = {
   // Test reporter for stdout.
   // The only one supported by default is 'dot'
   // see also: https://webdriver.io/docs/dot-reporter
-  reporters: ["dot", "spec"],
+  reporters: ["spec"],
+
   //
   // Options to be passed to Mocha.
   // See the full list at http://mochajs.org/
   mochaOpts: {
     ui: "bdd",
-    timeout: 60000, // my emulator is too slow to run the tests in 20000
+    timeout: 60000,
   },
   //
   // =====
@@ -193,16 +216,8 @@ export const config = {
    * @param {Array.<String>} specs        List of spec file paths that are to be run
    * @param {Object}         browser      instance of created browser/device session
    */
-  before: async () => {
-    const chai = await import("chai");
-    global.expectChai = chai.expect;
-    global.assert = chai.expect;
-    global.should = chai.expect;
-    //    const chai = require('chai');
-    //global.expectChai = chai.expect();
-    //global.assert = chai.expect();
-    //global.should = chai.expect();
-  },
+  // before: function (capabilities, specs) {
+  // },
   /**
    * Runs before a WebdriverIO command gets executed.
    * @param {String} commandName hook command name
