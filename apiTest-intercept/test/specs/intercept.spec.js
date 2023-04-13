@@ -11,7 +11,7 @@ describe('Web Intercept ', () => {
         // Log the response body
         console.log('RESPONSE BODY:', response.body);
 
-        await $('#twotabsearchtextbox').setValue('mobile');
+        await $("input[type='text']").setValue('mobile');
         await browser.pause(2000);
 
         browser.assertRequests();
